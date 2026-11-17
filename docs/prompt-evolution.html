@@ -21,6 +21,7 @@
   --opt: #1f6b5a;
   --opt-wash: #ecf5f1;
   --ph: #6a3fa0;
+  --mark: #f6dd8a;
   --font-display: "Fraunces", Georgia, "Times New Roman", serif;
   --font-body: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -28,13 +29,13 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #141816; --surface: #1b201d; --fg: #e4e9e5; --muted: #9aa69f; --line: #2e3631;
-    --init: #e0a364; --init-wash: #241d16; --opt: #6cc7ae; --opt-wash: #15241f; --ph: #c4a2ee;
+    --init: #e0a364; --init-wash: #241d16; --opt: #6cc7ae; --opt-wash: #15241f; --ph: #c4a2ee; --mark: #6b5414;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #141816; --surface: #1b201d; --fg: #e4e9e5; --muted: #9aa69f; --line: #2e3631;
-  --init: #e0a364; --init-wash: #241d16; --opt: #6cc7ae; --opt-wash: #15241f; --ph: #c4a2ee;
+  --init: #e0a364; --init-wash: #241d16; --opt: #6cc7ae; --opt-wash: #15241f; --ph: #c4a2ee; --mark: #6b5414;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -88,7 +89,23 @@ pre {
   margin: 0; padding: 14px 16px; white-space: pre-wrap; overflow-wrap: anywhere;
   font-family: var(--font-mono); font-size: 12.5px; line-height: 1.6; color: var(--fg);
 }
+.facts { display: grid; gap: 28px; padding-top: 32px; border-top: 2px solid var(--fg); }
+.facts-intro { display: grid; gap: 10px; max-width: 760px; }
+.facts-intro h2 { font-family: var(--font-display); font-weight: 600; font-size: clamp(24px, 3.2vw, 32px); line-height: 1.15; margin: 0; text-wrap: balance; }
+.facts-intro p { margin: 0; color: var(--muted); max-width: 65ch; }
+.fact { display: grid; gap: 12px; }
+.fact-head { display: grid; gap: 4px; }
+.fact-head h3 { margin: 0; font-size: 18px; font-weight: 600; }
+.fact-head p { margin: 0; color: var(--muted); max-width: 75ch; }
+.qid { font-family: var(--font-mono); font-size: 12px; font-weight: 400; color: var(--muted); margin-left: 6px; }
+.trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: start; }
+.trio pre { max-height: 440px; overflow-y: auto; font-size: 12px; }
+.plain .col-label { color: var(--muted); background: var(--bg); }
+.rank { font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: 0; padding: 1px 7px; border-radius: 999px; border: 1px solid currentColor; }
+.rank.up { color: var(--opt); } .rank.down { color: var(--init); } .rank.flat { color: var(--muted); }
+mark { background: var(--mark); color: var(--fg); padding: 0 2px; border-radius: 2px; }
 footer { font-size: 13px; color: var(--muted); max-width: 70ch; }
+@media (max-width: 980px) { .trio { grid-template-columns: minmax(0, 1fr); } .trio pre { max-height: 320px; } }
 @media (max-width: 820px) {
   .pair { grid-template-columns: minmax(0, 1fr); }
 }
@@ -696,6 +713,233 @@ Use this as your source description:
   </div>
 </section>
   </main>
+
+  <section class="facts" id="added-facts" aria-labelledby="facts-title">
+    <div class="facts-intro">
+      <p class="eyebrow">Side effect of optimization</p>
+      <h2 id="facts-title">When the better rewrite adds facts</h2>
+      <p>The optimized prompts ask the rewriter to answer likely buyer questions. When the original description has no answer, GPT-4.1 often supplies one. Below are products from the test set rewritten in the <em>competitive</em> style: the original, the rewrite from the initial prompt (GEO), and the rewrite from the optimized prompt (Better GEO). Highlighted text marks claims that the original description does not make. The badges show how many places each rewrite moved the product up or down in the GPT-4.1 judge's ranking. Some rewrites stop mid-sentence because the rewriter's output was capped at 500 tokens.</p>
+    </div>
+
+<article class="fact" id="fact-11637">
+  <header class="fact-head">
+    <h3>Wireless earbuds <span class="qid">query 11637</span></h3>
+    <p>The original is only the product name, repeated. GEO already invents vague features (touch controls, rapid charging). Better GEO goes further, with exact battery hours and an IPX5 rating.</p>
+  </header>
+  <div class="trio">
+    <div class="col plain"><div class="col-label">Original</div><pre>Wireless Earbuds
+Wireless earbuds
+Wireless earbuds</pre></div>
+    <div class="col init"><div class="col-label">GEO <span class="rank up">+1</span></div><pre>Experience next-level audio freedom with these advanced wireless earbuds, engineered for seamless connectivity and superior sound quality. Featuring cutting-edge Bluetooth technology, these earbuds deliver crystal-clear audio and deep, immersive bass, ensuring your music and calls are always vibrant and uninterrupted. The ergonomic design guarantees a comfortable, secure fit for all-day wear, while the long-lasting battery life keeps you powered through extended listening sessions. Intuitive <mark>touch controls</mark> and rapid charging capabilities provide unmatched convenience, making these wireless earbuds the optimal choice for those who demand exceptional performance, reliability, and comfort in every moment.</pre></div>
+    <div class="col opt"><div class="col-label">Better GEO <span class="rank up">+8</span></div><pre>**Wireless Earbuds**
+
+**Key Features**
+- **True Wireless Design:** Enjoy complete freedom of movement with <mark>Bluetooth-enabled</mark>, cord-free earbuds compatible with most smartphones, tablets, and laptops.
+- **Long-Lasting Battery Life:** Delivers up to <mark>6 hours</mark> of continuous playtime on a single charge, with an additional <mark>18 hours</mark> provided by the compact charging case.
+- **Crystal-Clear Sound Quality:** Advanced audio drivers offer deep bass, crisp treble, and balanced mids for immersive music, podcasts, and calls.
+- **<mark>Touch Controls</mark>:** Easily manage playback, adjust volume, and answer calls directly from the earbuds with intuitive <mark>touch-sensitive controls</mark>.
+- **Secure, Comfortable Fit:** Ergonomic design with multiple ear tip sizes ensures a snug fit for various ear shapes, ideal for workouts, commuting, and daily wear.
+- **Sweat and Water Resistance:** <mark>IPX5</mark>-rated protection guards against sweat and light rain, making these earbuds suitable for exercise and outdoor activities.
+- **Built-In Microphone:** Integrated microphone enables clear voice calls and supports voice assistant functions.
+
+**Main Benefits**
+- **Tangle-Free Listening:** No wires means hassle-free use, perfect for active lifestyles and on-the-go convenience.
+- **All-Day Power:** Extended battery life with portable charging case keeps your music and calls going throughout the day.
+- **Superior Audio Experience:** Enhanced sound quality meets the needs of music lovers, podcast listeners, and anyone seeking clear call audio.
+- **User-Friendly Controls:** Quick access to essential functions without reaching for your device.
+- **Comfort and Stability:** Designed to stay in place during exercise, travel, or daily routines, reducing discomfort and the risk of falling out.
+- **Weather-Ready:** Reliable performance even during workouts or outdoor use in light rain.
+
+**Typical Use Cases and Outcomes**
+- **Fitness and Workouts:** Secure fit and sweat resistance make these earbuds ideal for running, gym sessions, and outdoor sports.
+- **Travel and Commuting:** Compact design and noise isolation help you enjoy music or calls on buses, trains, or flights.
+- **Work and Study:** Built-in microphone and <mark>touch controls</mark> support hands-free calls and virtual meetings, improving productivity.
+- **Everyday Entertainment:** Perfect for streaming music, podcasts, or audiobooks at home or on the move.
+
+**Frequently Asked Questions**
+- **Are these earbuds compatible with my device?** Yes, they work with most <mark>Bluetooth-enabled</mark> devices, including iOS and Android smartphones, tablets, and laptops.
+-</pre></div>
+  </div>
+</article>
+
+<article class="fact" id="fact-4790">
+  <header class="fact-head">
+    <h3>Cuekondy plastic food jars <span class="qid">query 4790</span></h3>
+    <p>The original says PP, food grade and airtight. The rewrite adds BPA-free and answers its own dishwasher question with a contradictory “Yes … by hand”.</p>
+  </header>
+  <div class="trio">
+    <div class="col plain"><div class="col-label">Original</div><pre>Cuekondy Food Storage Containers Clear Empty Plastic Storage Jars with Lids Durable Kitchen Storage Box Round Sealing Food Grade Air Tight Containers (D/15x6.5cm)
+🍀 Material: PP 🍀 Keep Your Food Dry &amp; Safe:Plastic Storage Container holds kitchen staples like flour, sugar, rice, nuts, beans, snack, food, cereal, coffee, and tea,Flour, Granulated Sugar, Brown Sugar, Powdered Sugar. 🍀 Airtight Lid Seal: locking system with silicone seal. Durable construction.Convenient food-storage container, 100% Airtight and watertight. 🍀 Stylish Design &amp; Solid Functionality: Our philosophy is simple: offer stylish designs with no-nonsense functionality. We understand the kitchen is the heart of the home, where family &amp; friends connect. 🍀 See-Through Design: The containers themselves are intelligently designed to be clear ,so that you can see what the contents are without the need of tags and notes.
+Features: Package: 1 Piece Food Storage Pot  Material: PP  Capacity: A/8x6.5cm; B/10x6.5cm; C/12x6.5cm; D/15x6.5cm  Color: Clear  100% Brand New &amp; High Quality Package Content: 1X Food Storage Pot</pre></div>
+    <div class="col init"><div class="col-label">GEO <span class="rank up">+3</span></div><pre>Experience superior kitchen organization with Cuekondy Food Storage Containers, expertly crafted from high-quality, food-grade PP material to ensure both safety and durability. Unlike conventional containers, these jars feature an advanced airtight and watertight locking system with a precision silicone seal, effectively preserving the freshness and flavor of your ingredients while preventing leaks and spills. The robust construction resists everyday wear, guaranteeing long-lasting performance for all your storage needs—whether for flour, sugar, rice, nuts, snacks, coffee, or tea.
+
+Cuekondy containers are thoughtfully designed with a crystal-clear, see-through body, allowing you to instantly identify contents without the hassle of labels or notes, streamlining your kitchen experience. The sleek, modern aesthetic seamlessly blends style with practicality, making these containers an elegant addition to any kitchen. Choose Cuekondy for a storage solution that combines innovative sealing technology, exceptional clarity, and enduring quality—setting a new standard in kitchen organization.</pre></div>
+    <div class="col opt"><div class="col-label">Better GEO <span class="rank up">+7</span></div><pre>**Key Features**
+
+- **Premium Food-Grade Material:** Made from high-quality, <mark>BPA-free</mark> PP (polypropylene) plastic, ensuring safe and durable food storage for daily kitchen use.
+- **Airtight and Watertight Seal:** Features a secure locking lid with a silicone gasket, providing a 100% airtight and leak-proof seal to keep food fresh and dry.
+- **Transparent, See-Through Design:** Clear plastic construction allows you to easily identify contents at a glance without the need for labels or tags.
+- **Generous Capacity:** Size D (15x6.5cm) offers ample space for storing a wide range of pantry staples and kitchen essentials.
+- **Easy to Clean and Maintain:** Smooth surfaces and simple design make these containers easy to wash and reuse.
+
+**Main Benefits**
+
+- **Keeps Food Fresh Longer:** Airtight seal prevents moisture, air, and pests from entering, helping to extend the shelf life of dry goods such as flour, sugar, rice, coffee, tea, snacks, and cereals.
+- **Organizes Your Kitchen Efficiently:** Stackable and space-saving design helps declutter countertops and pantry shelves, making it easier to find and access ingredients.
+- **Safe and Reliable Storage:** Food-grade, <mark>non-toxic</mark> materials ensure your ingredients remain uncontaminated and safe for consumption.
+- **Convenient and Versatile:** Suitable for a variety of food items, from baking ingredients and grains to nuts, beans, and snacks.
+
+**Typical Use Cases and Outcomes**
+
+- **Pantry Organization:** Ideal for storing and organizing bulk foods, baking supplies, and daily-use ingredients in kitchen cabinets or shelves.
+- **Meal Prep and Portion Control:** Perfect for meal prepping, storing leftovers, or keeping snacks fresh for on-the-go use.
+- **Easy Content Identification:** The clear design is especially helpful for busy households, allowing quick visual checks to monitor food levels and reduce waste.
+- **Home, Office, or Travel:** Compact and durable, these containers are suitable for use at home, in the office, or for travel and picnics.
+
+**Frequently Asked Questions**
+
+- **Is this container <mark>dishwasher safe</mark>?** Yes, the smooth plastic surface is easy to clean by hand or in the dishwasher.
+- **Is it suitable for liquids?** The airtight and watertight seal makes it suitable for storing both dry foods and liquids without leaking.
+- **How durable is the material?** The PP plastic construction is designed for long-lasting use, resisting cracks and stains</pre></div>
+  </div>
+</article>
+
+<article class="fact" id="fact-5390">
+  <header class="fact-head">
+    <h3>Lock &amp; Lock glass lunch box set <span class="qid">query 5390</span></h3>
+    <p>The original covers microwave, oven and freezer use. The rewrite adds BPA-free, non-toxic and dishwasher-safe claims.</p>
+  </header>
+  <div class="trio">
+    <div class="col plain"><div class="col-label">Original</div><pre>Lock &amp; Lock Glass Euro Lunch Box Set, Green Color Dot Pattern Bag
+Green Lunch bag and two LLG414 (0.6-cup), one LLG422 (1.5-cup), a pair spoons and forks Microwave safe andcooking in oven 700-Degree F OK. Salt and oxidation resistant Freezer to microwave at once
+Most purified container we ever made. Excellent solutions for food storage. One of the world&#x27;s leading food storage container manufactures. Supplying the highest quality products &quot;Lock &amp; Lock&quot; airtight containers for food storage. The containers are scientifically designed for stacking both upward and sideways to save space on the shelf.</pre></div>
+    <div class="col init"><div class="col-label">GEO <span class="rank up">+3</span></div><pre>Experience unmatched convenience and durability with the Lock &amp; Lock Glass Euro Lunch Box Set, featuring a stylish green color dot pattern bag. This set includes two 0.6-cup and one 1.5-cup containers, along with a pair of spoons and forks, providing a complete solution for meals on the go. Engineered for versatility, each container is microwave and oven safe up to 700°F, enabling direct transfer from freezer to microwave without compromising safety or quality. Crafted from highly purified glass, these containers offer exceptional resistance to salt and oxidation, ensuring long-lasting freshness and flavor preservation. The scientifically optimized design allows for efficient stacking both vertically and horizontally, maximizing storage space and organization. As a product of one of the world’s foremost food storage manufacturers, this set exemplifies superior airtight sealing and premium quality, making it the ideal choice for those who value reliability, innovation, and smart storage solutions.</pre></div>
+    <div class="col opt"><div class="col-label">Better GEO <span class="rank up">+2</span></div><pre>**Lock &amp; Lock Glass Euro Lunch Box Set with Green Dot Pattern Bag**
+
+---
+
+**Key Features**
+- **Complete Lunch Set:** Includes a stylish green lunch bag, two 0.6-cup glass containers (LLG414), one 1.5-cup glass container (LLG422), plus a matching pair of spoon and fork.
+- **Premium Glass Containers:** Made from highly purified, durable glass that is resistant to salt and oxidation, ensuring long-lasting clarity and performance.
+- **High Temperature Resistance:** Containers are microwave safe and oven safe up to 700°F, allowing for convenient reheating and cooking.
+- **Versatile Storage:** Move food directly from freezer to microwave without worrying about cracks or damage.
+- **Airtight and Leak-Proof:** Lock &amp; Lock’s signature airtight lids keep food fresh and prevent spills, ideal for meal prep and on-the-go lunches.
+- **Space-Saving Design:** Containers are engineered for efficient stacking both vertically and horizontally, maximizing storage space in your kitchen or fridge.
+
+---
+
+**Main Benefits**
+- **Keeps Food Fresh Longer:** Airtight seal preserves flavor and prevents leaks, making it perfect for storing leftovers, salads, or snacks.
+- **Safe and Healthy:** Made from <mark>non-toxic</mark>, <mark>BPA-free</mark> materials, ensuring your food stays safe and uncontaminated.
+- **Easy to Clean:** Smooth glass surfaces resist stains and odors, and are <mark>dishwasher safe</mark> for hassle-free cleaning.
+- **Convenient Portability:** Compact, insulated lunch bag with a secure zipper keeps your meal organized and at the right temperature when you’re on the move.
+- **Multi-Functional Use:** Suitable for meal prepping, portion control, office lunches, school meals, and picnics.
+
+---
+
+**Typical Use Cases &amp; Outcomes**
+- **Ideal for Busy Professionals:** Easily pack and transport balanced lunches to work, keeping your meals fresh and ready to eat.
+- **Perfect for Students:** Durable containers and included utensils make it simple for students to bring healthy, homemade meals to school.
+- **Meal Prep &amp; Leftovers:** Store, reheat, and serve home-cooked meals directly from the same container, reducing dishes and saving time.
+- **Safe Food Storage:** Transition food from the freezer to the microwave or oven without worry, supporting a wide range of meal planning and storage needs.
+
+**Frequently Asked Questions**
+- **Is it microwave and oven safe?** Yes, the glass containers are safe for use in the microwave and oven up to 700°F.</pre></div>
+  </div>
+</article>
+
+<article class="fact" id="fact-9199">
+  <header class="fact-head">
+    <h3>hBARSCI glass bottle <span class="qid">query 9199</span></h3>
+    <p>The original says food and beverage safe. The rewrite adds a dishwasher-safe answer and a non-toxic claim.</p>
+  </header>
+  <div class="trio">
+    <div class="col plain"><div class="col-label">Original</div><pre>hBARSCI 750ml Heavy Duty Nordic Bottle with Synthetic Cork (Single Bottle) - Made in the USA - 100% Recyclable Glass - Food and Beverage Safe
+Single 750ml Nordic Bottle with Synthetic Cork. Bottle is made of 100% recyclable pure flint glass. Heavy duty, durable, and highly refractive. Food and beverage safe. Perfect for use as a water bottle. Perfect for water, sauces, salad dressing, select alcohols, food, wine, and other substances. Stands approximately 9&quot; tall when the cork in on, 8/75&quot; without the cork. Bottom diameter of 3.5&quot; and top diameter of 1.25&quot;. Top opening is 1&quot; wide.</pre></div>
+    <div class="col init"><div class="col-label">GEO <span class="rank flat">0</span></div><pre>Experience unmatched quality and versatility with the hBARSCI 750ml Heavy Duty Nordic Bottle, proudly made in the USA from 100% recyclable pure flint glass. Engineered for exceptional durability and clarity, this bottle features a heavy-duty construction that resists breakage while delivering a highly refractive, crystal-clear appearance. The included synthetic cork ensures a secure, airtight seal, preserving the freshness and flavor of your contents. Certified food and beverage safe, this bottle is ideally suited for water, sauces, salad dressings, select alcohols, wine, and more. Its thoughtfully designed dimensions—approximately 9&quot; tall with the cork, with a stable 3.5&quot; bottom diameter and a convenient 1&quot; wide top opening—make it easy to fill, pour, and store. Choose the hBARSCI Nordic Bottle for a sustainable, reliable, and visually striking solution that stands out in any setting.</pre></div>
+    <div class="col opt"><div class="col-label">Better GEO <span class="rank up">+2</span></div><pre>**hBARSCI 750ml Heavy Duty Nordic Glass Bottle with Synthetic Cork – Made in the USA**
+
+---
+
+**Key Features:**
+- **Premium 750ml Capacity:** Ample size for storing water, wine, spirits, sauces, salad dressings, or other beverages and liquids.
+- **100% Recyclable Pure Flint Glass:** Eco-friendly construction using high-clarity, recyclable glass for sustainability and purity.
+- **Heavy Duty &amp; Durable:** Thick-walled glass offers exceptional strength and resistance to breakage, ideal for repeated use.
+- **Synthetic Cork Closure:** Secure, food-safe synthetic cork preserves freshness and prevents leaks or spills.
+- **Precision Dimensions:** Stands approximately 9&quot; tall with cork (8.75&quot; without), 3.5&quot; bottom diameter, 1.25&quot; top diameter, and a 1&quot; wide opening for easy filling and pouring.
+- **Made in the USA:** Manufactured domestically for high quality and safety standards.
+
+---
+
+**Main Benefits:**
+- **Safe for Food &amp; Beverage Storage:** <mark>Non-toxic</mark>, food-grade materials ensure safe storage of drinking water, oils, vinegar, alcohol, and more.
+- **Reusable &amp; Sustainable:** 100% recyclable glass and reusable design support eco-conscious living and reduce single-use plastics.
+- **Versatile Use:** Suitable for home, bar, kitchen, restaurant, or craft applications—ideal for both everyday use and special occasions.
+- **Easy to Clean:** Smooth glass surface is simple to wash by hand or in most dishwashers, ensuring hygiene and convenience.
+- **Leak-Resistant Seal:** Synthetic cork provides a tight, reliable seal to maintain liquid freshness and prevent accidental spills during storage or transport.
+
+---
+
+**Typical Use Cases &amp; Outcomes:**
+- **Home Beverage Storage:** Store and serve water, wine, spirits, or homemade infusions with an elegant, durable bottle.
+- **Kitchen Organization:** Decant oils, vinegars, salad dressings, or sauces for easy access and attractive presentation.
+- **Crafting &amp; Gifting:** Use for DIY projects, custom bottling, or as a stylish container for gifts and party favors.
+- **Hospitality &amp; Events:** Enhance table settings or bar service with a professional-grade, visually appealing glass bottle.
+
+---
+
+**Frequently Asked Questions:**
+- **Is the bottle <mark>dishwasher safe</mark>?** Yes, the glass is durable and easy to clean.
+- **Is it suitable for carbonated beverages?** The heavy-duty glass provides strength, but</pre></div>
+  </div>
+</article>
+
+<article class="fact" id="fact-2279">
+  <header class="fact-head">
+    <h3>LIKEFAIR farmhouse canisters <span class="qid">query 2279</span></h3>
+    <p>The original says “Food Safety Material” and hand wash only, which the rewrite repeats correctly. It also adds BPA-free and no chemical leaching.</p>
+  </header>
+  <div class="trio">
+    <div class="col plain"><div class="col-label">Original</div><pre>LF LIKEFAIR Farmhouse Kitchen Canisters Set of 3,Food Storage Containers for Home Kitchen, Tea, Herbs, Sugar, Salt, Coffee, Flour, Herbs (White &amp; Black)
+Add more Farmhouse Style to your Kitchen---This vintage style canister set will evoke some rustic beauty and farm Atmosphere,It is the perfect complement to your kitchen counter, and it matches perfectly with the coffee station set in Kitchen. Food Safety Material---Our farmhouse canisters are made of sturdy high quality powder coated galvanized steel. Canister sets are food contact material, safe for storing food, do not release harmful chemicals or odors.No worry about it will be easily broken like a ceramic or glass, rot or crack like wood. Come with Convenient chalk---Except 3pcs food storage jars, you will also receive a chalk and four pieces no remark chalkboard labels. The chalkboard label is reusable, you can change remark whenever you need. Just wipe clean with a damp cloth to remove what you have written. Labels can be written repeatedly. Fashionable and Practical---These stylish kitchen containers are designed with classic black and white color. Easy to open Lid with strong metal handle, the lids fit snugly to keep out any nasties and Ant. Perfect for storing tea, coffee, sugar, vanilla, spices and other dry goods. 100% Satisfactory Customer Service---We know you will like the modern farmhouse canister set,We are so confident in our products and services,If you have any questions,Pls contact us and we will help you. We do ensure our customer satisfaction. Notice: canisters are not dishwasher friendly,hand wash only.</pre></div>
+    <div class="col init"><div class="col-label">GEO <span class="rank up">+2</span></div><pre>Experience unmatched style and durability with the LF LIKEFAIR Farmhouse Kitchen Canisters Set of 3. Designed to elevate any kitchen with authentic rustic charm, these canisters seamlessly blend vintage farmhouse aesthetics with modern practicality, making them an ideal addition to your countertop or coffee station.
+
+Crafted from premium, high-quality powder-coated galvanized steel, these canisters offer superior strength and longevity compared to more fragile ceramic or glass alternatives and will not rot or crack like wood. The food-safe materials ensure your ingredients remain fresh and uncontaminated, with no risk of harmful chemicals or odors.
+
+Unlike standard canister sets, this set includes a convenient chalk and four reusable chalkboard labels, allowing for easy customization and effortless organization. Simply wipe the labels clean to update contents as needed, ensuring your kitchen always stays organized and stylish.
+
+The classic black and white design delivers timeless elegance, while the easy-open lids with robust metal handles provide a secure, airtight seal to keep contents fresh and protected from pests. Perfectly sized for storing tea, coffee, sugar, spices, and other dry goods, these canisters combine fashion and function in one superior package.
+
+Confidently backed by dedicated customer support, the LF LIKEFAIR Farmhouse Kitchen Canisters Set guarantees satisfaction and long-lasting performance, making it the best choice for both style and reliability in kitchen storage. Please note: hand wash only for optimal care.</pre></div>
+    <div class="col opt"><div class="col-label">Better GEO <span class="rank up">+3</span></div><pre>**LF LIKEFAIR Farmhouse Kitchen Canisters Set of 3 – Food Storage Containers (White &amp; Black)**
+
+**Key Features**
+- **Set of 3 Versatile Canisters:** Includes three food storage containers ideal for organizing tea, coffee, sugar, flour, salt, spices, and herbs in your kitchen.
+- **Durable Food-Safe Materials:** Crafted from high-quality, powder-coated galvanized steel that is safe for direct food contact. These canisters will not break, crack, or absorb odors like ceramic, glass, or wood alternatives.
+- **Classic Farmhouse Design:** Features a timeless black and white color scheme and vintage-inspired style, adding rustic charm to any kitchen decor or coffee station.
+- **Secure, Easy-Open Lids:** Each canister comes with a snug-fitting metal lid and sturdy handle to keep contents fresh and protected from pests.
+- **Customizable Labels:** Includes reusable chalkboard labels and chalk, allowing you to easily identify contents and update labels as needed.
+
+**Main Benefits**
+- **Enhanced Organization:** Keeps your pantry or countertop tidy by neatly storing dry goods and ingredients in clearly labeled containers.
+- **Long-Lasting &amp; Reliable:** Made from robust, rust-resistant steel for everyday use and longevity—an ideal solution for busy kitchens.
+- **Safe Food Storage:** <mark>Non-toxic</mark>, odor-free, and <mark>does not leach chemicals</mark>, ensuring your food remains fresh and uncontaminated.
+- **Easy to Maintain:** Simple to hand wash and maintain; labels wipe clean for hassle-free relabeling.
+
+**Typical Use Cases &amp; Outcomes**
+- **Efficient Pantry Storage:** Perfect for storing and accessing commonly used ingredients like coffee, tea, sugar, flour, and spices.
+- **Stylish Kitchen Decor:** Complements farmhouse, rustic, and modern kitchen styles; ideal for display on countertops or coffee bars.
+- **Personalized Organization:** Easily update canister labels for changing pantry needs or seasonal ingredients.
+
+**Frequently Asked Questions**
+- **Are the canisters dishwasher safe?** No, these canisters are hand wash only to preserve their finish and durability.
+- **Are the materials <mark>BPA-free</mark> and safe for food?** Yes, all materials are food-grade and safe for storing edible goods.
+- **How do I change the label?** Simply wipe the chalkboard label clean with a damp cloth and rewrite as needed.
+
+**Keywords:** farmhouse kitchen canisters, food storage containers, rustic kitchen decor, airtight canisters, pantry organization, labeled canisters,</pre></div>
+  </div>
+</article>
+  </section>
 
   <footer>Prompts are shown verbatim. The initial <em>advertisement</em> prompt opens with a stray quote character; that comes from a typo in the source file. Optimized prompts were selected on the validation split and never tuned on test data.</footer>
 </div>
