@@ -1,0 +1,992 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>E-GEO Prompt Evolution</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: masthead + style index, then one section per style with initial/optimized columns side by side (stacked on phones). */
+:root {
+  --bg: #f6f7f4;
+  --surface: #ffffff;
+  --fg: #1d2420;
+  --muted: #5f6b64;
+  --line: #dde2dc;
+  --init: #9a5b1e;
+  --init-wash: #fbf3ea;
+  --opt: #1f6b5a;
+  --opt-wash: #ecf5f1;
+  --ph: #6a3fa0;
+  --mark: #f6dd8a;
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-body: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141816; --surface: #1b201d; --fg: #e4e9e5; --muted: #9aa69f; --line: #2e3631;
+    --init: #e0a364; --init-wash: #241d16; --opt: #6cc7ae; --opt-wash: #15241f; --ph: #c4a2ee; --mark: #6b5414;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141816; --surface: #1b201d; --fg: #e4e9e5; --muted: #9aa69f; --line: #2e3631;
+  --init: #e0a364; --init-wash: #241d16; --opt: #6cc7ae; --opt-wash: #15241f; --ph: #c4a2ee; --mark: #6b5414;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 40px 64px;
+}
+.wrap { max-width: 1240px; margin: 0 auto; display: grid; gap: 40px; }
+.masthead { display: grid; gap: 14px; max-width: 760px; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin: 0; }
+h1 { font-family: var(--font-display); font-weight: 600; font-size: clamp(30px, 4.4vw, 44px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.lede a { color: inherit; }
+.legend { display: flex; flex-wrap: wrap; gap: 10px 22px; font-size: 13px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 8px; }
+.sw { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.sw.i { background: var(--init); } .sw.o { background: var(--opt); }
+.ph { color: var(--ph); font-weight: 500; }
+.legend .ph { font-family: var(--font-mono); font-size: 12px; }
+.index { display: grid; gap: 10px; }
+.index h2 { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0; font-weight: 600; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chips a {
+  display: inline-flex; align-items: baseline; gap: 8px; padding: 6px 12px;
+  border: 1px solid var(--line); border-radius: 999px; background: var(--surface);
+  color: var(--fg); text-decoration: none; font-weight: 500; font-size: 14px;
+}
+.chips a span { font-family: var(--font-mono); font-size: 12px; color: var(--opt); font-variant-numeric: tabular-nums; }
+.chips a:hover { border-color: var(--opt); }
+.chips a:focus-visible, .lede a:focus-visible { outline: 2px solid var(--opt); outline-offset: 2px; }
+.styles { display: grid; gap: 48px; }
+.style { display: grid; gap: 14px; scroll-margin-top: 16px; padding-top: 24px; border-top: 1px solid var(--line); }
+.style-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 20px; }
+.style-head h2 { font-family: var(--font-display); font-weight: 500; font-size: 26px; margin: 0; }
+.meta { margin: 0; font-size: 13px; color: var(--muted); }
+.tnum { font-variant-numeric: tabular-nums; }
+.pair { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 16px; align-items: start; }
+.col { min-width: 0; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); overflow: hidden; }
+.col-label {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+  padding: 9px 14px; font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+  border-bottom: 1px solid var(--line);
+}
+.col-label .src { font-family: var(--font-mono); font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--muted); font-size: 11px; }
+.init .col-label { color: var(--init); background: var(--init-wash); }
+.opt .col-label { color: var(--opt); background: var(--opt-wash); }
+pre {
+  margin: 0; padding: 14px 16px; white-space: pre-wrap; overflow-wrap: anywhere;
+  font-family: var(--font-mono); font-size: 12.5px; line-height: 1.6; color: var(--fg);
+}
+.facts { display: grid; gap: 28px; padding-top: 32px; border-top: 2px solid var(--fg); }
+.facts-intro { display: grid; gap: 10px; max-width: 760px; }
+.facts-intro h2 { font-family: var(--font-display); font-weight: 600; font-size: clamp(24px, 3.2vw, 32px); line-height: 1.15; margin: 0; text-wrap: balance; }
+.facts-intro p { margin: 0; color: var(--muted); max-width: 65ch; }
+.fact { display: grid; gap: 12px; }
+.fact-head { display: grid; gap: 4px; }
+.fact-head h3 { margin: 0; font-size: 18px; font-weight: 600; }
+.fact-head p { margin: 0; color: var(--muted); max-width: 75ch; }
+.qid { font-family: var(--font-mono); font-size: 12px; font-weight: 400; color: var(--muted); margin-left: 6px; }
+.trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: start; }
+.trio pre { max-height: 440px; overflow-y: auto; font-size: 12px; }
+.plain .col-label { color: var(--muted); background: var(--bg); }
+.rank { font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: 0; padding: 1px 7px; border-radius: 999px; border: 1px solid currentColor; }
+.rank.up { color: var(--opt); } .rank.down { color: var(--init); } .rank.flat { color: var(--muted); }
+mark { background: var(--mark); color: var(--fg); padding: 0 2px; border-radius: 2px; }
+footer { font-size: 13px; color: var(--muted); max-width: 70ch; }
+@media (max-width: 980px) { .trio { grid-template-columns: minmax(0, 1fr); } .trio pre { max-height: 320px; } }
+@media (max-width: 820px) {
+  .pair { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <p class="eyebrow">E-GEO · reflective prompt meta-optimization</p>
+    <h1>Fifteen rewrite prompts, before and after optimization</h1>
+    <p class="lede">Each starting prompt was evolved by a meta-model that read per-judge rank improvements on training batches and proposed revisions. The best one on validation was kept. On average the prompts grew from 90 to 240 words, and most styles ended up close to the same recipe: a summary, keyword-rich sections, features linked to user needs, and answers to likely questions. Source: the E-GEO repo, <code>src/all_init_prompts.py</code> and <code>src/optimized_prompts.json</code>.</p>
+    <div class="legend">
+      <span><i class="sw i"></i>Initial prompt</span>
+      <span><i class="sw o"></i>Optimized prompt</span>
+      <span><span class="ph">{description}</span>where the product text is inserted</span>
+    </div>
+  </header>
+
+  <nav class="index" aria-label="Styles">
+    <h2>Styles · length after vs. before</h2>
+    <div class="chips">
+<a href="#authoritative">authoritative<span>1.1×</span></a>
+<a href="#technical">technical<span>1.8×</span></a>
+<a href="#unique">unique<span>5.5×</span></a>
+<a href="#fluent">fluent<span>4.6×</span></a>
+<a href="#clickable">clickable<span>4.6×</span></a>
+<a href="#diverse">diverse<span>4.2×</span></a>
+<a href="#quality">quality<span>2.3×</span></a>
+<a href="#competitive">competitive<span>2.6×</span></a>
+<a href="#trick">trick<span>2.0×</span></a>
+<a href="#format">format<span>3.2×</span></a>
+<a href="#FAQ">FAQ<span>3.5×</span></a>
+<a href="#advertisement">advertisement<span>2.2×</span></a>
+<a href="#language">language<span>1.6×</span></a>
+<a href="#minimalist">minimalist<span>3.1×</span></a>
+<a href="#storytelling">storytelling<span>5.8×</span></a>
+    </div>
+  </nav>
+
+  <main class="styles">
+
+<section class="style" id="authoritative">
+  <header class="style-head">
+    <h2>authoritative</h2>
+    <p class="meta"><span class="tnum">196</span> → <span class="tnum">219</span> words · <span class="tnum">1.1×</span> longer</p>
+  </header>
+  <div class="pair">
+    <article class="col init">
+      <div class="col-label">Initial <span class="src">all_init_prompts.py</span></div>
+      <pre>Transform the following product description into an authoritative style without adding or removing any core information. 
+The revised description should reflect confidence, expertise, and assertiveness, while maintaining the original content&#x27;s meaning and relevance. 
+The description should be assertive in its statements, such that reader believes that this is more valuable product than other products. 
+End Goal is to increase the ranking of the product, by assertively saying that this is the best product for the user.
+However, the content should remain the same. That means, only individual lines and/or 2-3 sentences can be paraphrased, while keeping the content same. 
+Return just the upgraded description without any additional text.
+Description: <span class="ph">{description}</span>
+
+Remember to be authoritative, but keep the content of text the same. 
+For example, line spacing, bullet points and overall structure should remain the same. 
+No addition or deletion of content is allowed. 
+Note we have to convince the reader that this is an relevant product by saying it authoritatively in the description itself.
+For example the addition of phrases such as &quot;only we are authentic etc&quot;, &#x27;we guarantee&#x27;, use of second pronouns such as &quot;you will not regret&quot; etc is expected within the content itself.</pre>
+    </article>
+    <article class="col opt">
+      <div class="col-label">Optimized <span class="src">optimized_prompts.json</span></div>
+      <pre>Rewrite the following product description to maximize its ranking across all major search and recommendation engines. Focus on improving visibility and relevance for a wide range of user queries, while maintaining factual accuracy and trustworthiness.
+
+Guidelines:
+- Start with a concise, compelling summary that uses the most common and high-frequency search terms and phrases for this product type. Ensure the opening closely matches how users typically search for this product.
+- Clearly label and organize sections for “Key Features,” “Benefits,” and (if applicable) “Use Cases.” Use concise bullet points for features and benefits.
+- For each feature, explicitly state how it addresses a user query, solves a problem, or fulfills a specific need—link every feature to its direct user value.
+- Naturally incorporate exact-match keywords and closely related synonyms throughout, with an emphasis on exact matches in the summary and section headings.
+- Include brief, user-intent-driven phrases or questions (e.g., “Need [solution]? Looking for [feature]?”) to increase query–description alignment.
+- Avoid redundancy, ambiguity, and filler; every sentence should provide clear, unique, and verifiable information.
+- Do NOT add or infer any details not present in the original description.
+- Maintain a professional, neutral, and trustworthy tone.
+- Strictly avoid keyword stuffing, unnatural phrasing, or repetitive language.
+
+Rewrite only the product description and return the completed version.
+
+Product Description: <span class="ph">{description}</span></pre>
+    </article>
+  </div>
+</section>
+
+<section class="style" id="technical">
+  <header class="style-head">
+    <h2>technical</h2>
+    <p class="meta"><span class="tnum">145</span> → <span class="tnum">260</span> words · <span class="tnum">1.8×</span> longer</p>
+  </header>
+  <div class="pair">
+    <article class="col init">
+      <div class="col-label">Initial <span class="src">all_init_prompts.py</span></div>
+      <pre>Make the following product description more technical, using giving more technical terms and facts where needed while ensuring the key information is still conveyed. Do not omit, add, or alter any core information in the process. 
+Remember the end-goal is that very knowledgeable readers give more attention to this product, when presented with a series of other products, so make the language such that it has more technical information or existing information is presented in more technical fashion. 
+However, Do not add or delete any content . The number of words in the initial description should be the same as that in the final.
+The length of the new description should be the same as the original. Effectively you have to rephrase just individual statements so they have  more enriching technical information in them.
+Return just the upgraded description without any additional text.
+Description: <span class="ph">{description}</span></pre>
+    </article>
+    <article class="col opt">
+      <div class="col-label">Optimized <span class="src">optimized_prompts.json</span></div>
+      <pre>Rewrite the following product description to maximize its ranking and visibility across all major search and recommendation engines, ensuring strong performance for a wide variety of user queries and ranking models. Your rewritten description must:
+
+- Strictly preserve all original facts—do not add, remove, or alter any factual information.
+- Maintain approximately the same length as the original (±2 sentences), allowing minor expansion for clarity and coverage.
+- Begin with a one-sentence summary that clearly states the product’s main purpose, typical users, and core benefit, using both technical terminology and plain language.
+- Organize the description into three clearly labeled sections: &quot;Key Use Cases and Search Queries&quot;, &quot;Features&quot;, and &quot;Benefits&quot;.
+    - In &quot;Key Use Cases and Search Queries&quot;, describe the main scenarios, problems solved, and typical user intents. Naturally include a diverse range of keywords, synonyms, alternative phrasings, and common ways users might search or ask about this product.
+    - In &quot;Features&quot; and &quot;Benefits&quot;, use concise bullet points to list details. For each point, use both domain-specific terms and accessible language, briefly explaining any technical jargon.
+    - Ensure all sections include relevant synonyms and related terms, but avoid repetition or unnatural keyword stuffing—incorporate keywords contextually and naturally.
+- Use clear, logical structure and concise sentences for easy parsing and readability by different engines and users.
+- Make the description semantically diverse, covering various ways users may describe, search for, or inquire about this product.
+- Avoid ambiguous, subjective, or unverifiable claims, and maintain strict factual accuracy throughout.
+- Return only the improved product description in the specified structure.
+
+Description: <span class="ph">{description}</span></pre>
+    </article>
+  </div>
+</section>
+
+<section class="style" id="unique">
+  <header class="style-head">
+    <h2>unique</h2>
+    <p class="meta"><span class="tnum">46</span> → <span class="tnum">254</span> words · <span class="tnum">5.5×</span> longer</p>
+  </header>
+  <div class="pair">
+    <article class="col init">
+      <div class="col-label">Initial <span class="src">all_init_prompts.py</span></div>
+      <pre>Revise the following product description by incorporating more unique and rare words, without altering the core information. 
+Ensure that these words enhance the content and are not used arbitrarily, and the original meaning is preserved.
+Return just the upgraded description without any additional text.
+
+Description: <span class="ph">{description}</span></pre>
+    </article>
+    <article class="col opt">
+      <div class="col-label">Optimized <span class="src">optimized_prompts.json</span></div>
+      <pre>Rewrite the following product description to maximize its ranking, relevance, and appeal across a wide variety of search and recommendation engines. Your goal is to create a description that aligns with the broadest possible range of user intents and queries, ensuring high performance on diverse ranking models.
+
+Instructions:
+
+- Start with a concise summary paragraph that clearly describes the product, its main purpose, target users, and primary benefits. Naturally include both common keywords and related terms or synonyms likely to match user searches.
+- Use logically grouped bullet points to highlight key features, advantages, and important specifications. For each feature, use clear language and naturally incorporate direct and related keywords, including both broad and specific (long-tail) phrases relevant to potential queries.
+- Add a clearly marked section or bullet (“What Sets This Product Apart”) that explains the product’s unique selling points in direct comparison to typical alternatives, using factual, comparative language.
+- Include a brief paragraph describing common use cases or scenarios where this product excels, anticipating and reflecting different types of user needs (such as informational, transactional, and comparative queries).
+- Add a short “Customer Questions Answered” section that concisely addresses likely user questions or concerns, using only information from the original description.
+- Ensure all content is factual, informative, easy to scan, and free of repetition. Avoid exaggeration, unsupported claims, or any information not present in the original description.
+- Structure the description for readability, using a mix of short paragraphs and bullet points.
+
+Return only the improved product description.
+
+Description: <span class="ph">{description}</span></pre>
+    </article>
+  </div>
+</section>
+
+<section class="style" id="fluent">
+  <header class="style-head">
+    <h2>fluent</h2>
+    <p class="meta"><span class="tnum">49</span> → <span class="tnum">226</span> words · <span class="tnum">4.6×</span> longer</p>
+  </header>
+  <div class="pair">
+    <article class="col init">
+      <div class="col-label">Initial <span class="src">all_init_prompts.py</span></div>
+      <pre>Rewrite the following product description to make it more fluent without altering the core content. 
+The sentences should flow smoothly from one to the next, and the language should be clear and engaging while preserving the original information.
+Return just the upgraded description without any additional text.
+
+Description: <span class="ph">{description}</span></pre>
+    </article>
+    <article class="col opt">
+      <div class="col-label">Optimized <span class="src">optimized_prompts.json</span></div>
+      <pre>Rewrite the following product description to maximize its ranking and appeal across all major search and recommendation engines, ensuring strong performance for a wide variety of user search intents and queries.
+
+Instructions:
+- Begin with a clear, engaging sentence that defines the product, its main purpose, and its standout benefit or differentiator.
+- Naturally weave in a variety of relevant keywords and synonyms that real users might use, making sure they fit seamlessly within the context.
+- Explicitly address who the product is for and the most common user needs or problems it solves—match the language and intent of different likely search queries.
+- Highlight 3–5 specific features, benefits, or real-world use cases, using bullets or concise paragraphs, with at least one example or scenario to illustrate value.
+- Include a brief trust or authority signal (such as quality assurance, satisfaction guarantee, expert recommendation, or positive reviews) to build credibility.
+- Use clear, persuasive, and varied language while maintaining factual accuracy and avoiding repetition or exaggeration.
+- Conclude with a concise value statement or call to action that emphasizes what sets this product apart.
+- Keep the total length between 80 and 150 words for optimal readability and ranking.
+- Organize the information for easy scanning and comprehension, but allow flexibility in structure as appropriate for the product.
+
+Return only the improved product description.
+
+Description: <span class="ph">{description}</span></pre>
+    </article>
+  </div>
+</section>
+
+<section class="style" id="clickable">
+  <header class="style-head">
+    <h2>clickable</h2>
+    <p class="meta"><span class="tnum">66</span> → <span class="tnum">306</span> words · <span class="tnum">4.6×</span> longer</p>
+  </header>
+  <div class="pair">
+    <article class="col init">
+      <div class="col-label">Initial <span class="src">all_init_prompts.py</span></div>
+      <pre>Enhance the following product description to make it more clickable and engaging, without changing the core information. 
+Use persuasive language and compelling phrases that encourage users to click on the product when they see it among other options.
+Make sure the description highlights the product&#x27;s key benefits and unique selling points in an appealing way.
+Return just the upgraded description without any additional text.
+
+Description: <span class="ph">{description}</span></pre>
+    </article>
+    <article class="col opt">
+      <div class="col-label">Optimized <span class="src">optimized_prompts.json</span></div>
+      <pre>Rewrite the following product description to maximize its ranking, relevance, and genuine user appeal across a diverse range of search and recommendation engines. Your goal is to create a concise, information-rich description that consistently ranks highly for a wide variety of user queries and ranking algorithms by blending factual accuracy, natural language, and strategic, comprehensive keyword coverage.
+
+Instructions:
+
+- Begin with 1–2 clear, engaging sentences introducing the product name, category, core function, and its most compelling real-world use case or unique value proposition. Explicitly highlight what sets it apart and which specific need or problem it solves best. Systematically integrate primary and secondary keywords, synonyms, and related entities that match high-frequency user queries in this category.
+- Follow with a short, direct sentence that anticipates and answers the top 1–2 buying or comparison questions users typically ask in this product category—clearly address what matters most when choosing between alternatives.
+- Include a concise summary sentence reinforcing the product’s main use case and comparative advantage before the bullets.
+- Present 4–6 concise bullet points. Each bullet must:
+    • Start with a keyword-rich, intent-driven label (e.g., “Compatibility:”, “Unique Advantage:”, “Best For:”, “Key Feature:”, “Comparisons:”).
+    • The first two bullets must cover compatibility/fit and the product’s main differentiator or unique advantage.
+    • The remaining bullets should maximize coverage of the most relevant features, benefits, specifications, and direct comparison points—prioritize details that drive user decisions and help compare alternatives.
+    • Seamlessly include synonyms and related terms to reflect real user queries and enhance clarity.
+    • Use clear, natural, non-repetitive language without filler.
+- Keep the total description between 140–180 tokens, unless the original input is substantially longer.
+- Conclude with a single, impactful sentence summarizing the product’s unique benefit and providing a user-focused call to action or reassurance—use intent-driven, naturally persuasive language that builds trust and encourages engagement.
+
+Description: <span class="ph">{description}</span></pre>
+    </article>
+  </div>
+</section>
+
+<section class="style" id="diverse">
+  <header class="style-head">
+    <h2>diverse</h2>
+    <p class="meta"><span class="tnum">53</span> → <span class="tnum">222</span> words · <span class="tnum">4.2×</span> longer</p>
+  </header>
+  <div class="pair">
+    <article class="col init">
+      <div class="col-label">Initial <span class="src">all_init_prompts.py</span></div>
+      <pre>Revise the following product description to include and highlight diverse references and perspectives, without altering the core information.
+Ensure that the description reflects inclusivity and appeals to a broad audience.
+Highlight features and aspects of the product that are diverse in nature.
+Return just the upgraded description without any additional text.
+
+Description: <span class="ph">{description}</span></pre>
+    </article>
+    <article class="col opt">
+      <div class="col-label">Optimized <span class="src">optimized_prompts.json</span></div>
+      <pre>Rewrite the following product description to maximize its ranking and relevance across a wide variety of search and recommendation engines, optimizing for different ranking algorithms and user intents. Your rewrite must:
+
+- Begin with a clear, concise summary that states the product category, primary purpose, and intended user(s).
+- Organize content with short, skimmable sections: use brief paragraphs, descriptive headings, and bullet points where appropriate.
+- For each key feature, pair it with a specific benefit and a real-world scenario or common user query it addresses.
+- Naturally incorporate high-intent keywords, synonyms, and common search terms relevant to both the product category and its features—ensure these fit smoothly within the context and avoid forced repetition.
+- Explicitly address the main use case(s) and at least one alternative scenario where the product adds value, matching both typical and less common user needs.
+- Optionally include up to two frequently asked questions (FAQ), focusing only on top user concerns or decision factors (such as compatibility, alternatives, or practical limitations).
+- Use clear, neutral, and accurate language suitable for a broad audience. Do not exaggerate or make unsupported claims.
+- After writing, review the description to ensure it balances keyword coverage with natural readability, addresses diverse user intents, and is structured for both human and algorithmic parsing.
+
+Return only the improved product description.
+
+Description: <span class="ph">{description}</span></pre>
+    </article>
+  </div>
+</section>
+
+<section class="style" id="quality">
+  <header class="style-head">
+    <h2>quality</h2>
+    <p class="meta"><span class="tnum">89</span> → <span class="tnum">207</span> words · <span class="tnum">2.3×</span> longer</p>
+  </header>
+  <div class="pair">
+    <article class="col init">
+      <div class="col-label">Initial <span class="src">all_init_prompts.py</span></div>
+      <pre>Revise the following product description so that it emphasizes the high quality of the product.
+Focus on what the customer gains from using this product, rather than just listing features.
+Emphesize that the key features and/or materials used in the product are of superior quality.
+Emphesize the quality of the overall product and how it stands out in terms of value and user satisfaction.
+Maintain factual accuracy and original information, but restructure sentences to highlight value and outcomes.
+Return just the upgraded description without any additional text.
+
+Description: <span class="ph">{description}</span></pre>
+    </article>
+    <article class="col opt">
+      <div class="col-label">Optimized <span class="src">optimized_prompts.json</span></div>
+      <pre>Rewrite the following product description to maximize its ranking and user appeal across all major search engines and a broad range of user search intents.
+
+Instructions:
+
+- Start with a concise, engaging headline that clearly states the product’s main benefit or use case.
+- Write a brief summary that highlights what makes the product uniquely valuable or effective for users.
+- Clearly identify the primary user needs or scenarios this product addresses.
+- Present the most important features and real-world benefits using clear, direct language. Use bullet points or headers only where they improve clarity; otherwise, use concise narrative.
+- Integrate essential specifications, technical details, compatible devices, certifications, or unique attributes naturally and only if they add relevant value.
+- Address common user concerns or secondary use cases naturally within your summary or feature descriptions, rather than through a separate Q&amp;A.
+- Use important search terms, related phrases, and synonyms from the original description only where they fit naturally—avoid unnecessary repetition or keyword stuffing.
+- Ensure every sentence provides distinct, relevant information and avoids redundancy.
+- Keep the tone factual, clear, and concise, without exaggeration or unsupported claims.
+- End with a brief, action-oriented closing statement (e.g., “Order now,” “Learn more,” or “Get started”).
+
+Product Description:  
+<span class="ph">{description}</span></pre>
+    </article>
+  </div>
+</section>
+
+<section class="style" id="competitive">
+  <header class="style-head">
+    <h2>competitive</h2>
+    <p class="meta"><span class="tnum">73</span> → <span class="tnum">187</span> words · <span class="tnum">2.6×</span> longer</p>
+  </header>
+  <div class="pair">
+    <article class="col init">
+      <div class="col-label">Initial <span class="src">all_init_prompts.py</span></div>
+      <pre>Rewrite the following product description to highlight what makes this product superior compared to others in its category.
+Use confident but factual comparisons, without mentioning specific competitors.
+Emphasize unique features, innovations, and advantages that set it apart, while maintaining factual consistency with the original text.
+Do not change the core information, but make it clear why this product is the best choice.
+Return just the upgraded description without any additional text.
+
+Description: <span class="ph">{description}</span></pre>
+    </article>
+    <article class="col opt">
+      <div class="col-label">Optimized <span class="src">optimized_prompts.json</span></div>
+      <pre>Rewrite the following product description to improve its ranking and relevance across a variety of search and recommendation engines.
+
+- Clearly highlight the product’s unique features, primary benefits, and specific advantages using factual, concrete language.
+- Organize the description into clear sections: Key Features, Main Benefits, and Typical Use Cases or Outcomes. Use concise bullet points or short paragraphs for each section.
+- Explicitly connect each feature or benefit to common user needs or search queries in this product category, making it clear how the product solves real problems or fulfills specific intents.
+- Naturally incorporate a variety of relevant keywords, synonyms, and related terms that users might search for—avoid keyword stuffing and maintain readability.
+- When possible, directly address likely user questions (e.g., about durability, ease of use, compatibility, value) based on the product and its category, always maintaining factual consistency with the original description.
+- Do not reference competitors or make unsupported claims.
+- Ensure the rewrite is clear, concise, and focused on delivering information that matches what users are likely seeking.
+
+Return only the improved product description, without any additional commentary.
+
+Product description: <span class="ph">{description}</span></pre>
+    </article>
+  </div>
+</section>
+
+<section class="style" id="trick">
+  <header class="style-head">
+    <h2>trick</h2>
+    <p class="meta"><span class="tnum">126</span> → <span class="tnum">258</span> words · <span class="tnum">2.0×</span> longer</p>
+  </header>
+  <div class="pair">
+    <article class="col init">
+      <div class="col-label">Initial <span class="src">all_init_prompts.py</span></div>
+      <pre>Enhance the following product description, so that an LLM is more likely to rank it higher in product rankings.
+Your goal is to change the format of the text such that it aligns better with LLM ranking algorithms.
+Use features and language like specific style and/or grammar changes that are known to influence LLM ranking positively.
+Reorder or rephrase content to align with LLM ranking preferences, while keeping the core information intact.
+You may include subtle cues or keywords that are favored by LLMs in ranking tasks.
+You should research and apply known strategies for optimizing text for LLM ranking.
+Do not alter the factual content, but optimize the presentation for better LLM ranking outcomes.
+Return just the upgraded description without any additional text.
+
+Description: <span class="ph">{description}</span></pre>
+    </article>
+    <article class="col opt">
+      <div class="col-label">Optimized <span class="src">optimized_prompts.json</span></div>
+      <pre>Rewrite the following product description to optimize its ranking across a diverse range of LLM-powered product ranking engines and user search queries. Your goal is to produce a factually complete, highly relevant, and naturally appealing description that ranks well on multiple engines and engages real users.
+
+Instructions:
+
+- Use only information from the original description. Do not add, infer, or include any new facts or unsupported claims.
+- Include all factual details available in the original description, ensuring nothing important is omitted. Expand, reorganize, and rephrase as needed for clarity and completeness.
+- Structure the description with clear section headings only where the original content supports them. Otherwise, blend features and specifications into coherent, natural paragraphs suitable for both skimming and reading in full.
+- Integrate relevant keywords, synonyms, and related terms naturally throughout the description, not just in lists. Paraphrase key concepts using varied phrasing to ensure semantic diversity and broader query coverage.
+- Use bullet points sparingly, only for the most important features or specifications. Favor descriptive sentences and varied sentence structures elsewhere.
+- Write in fluent, neutral, and easy-to-understand language. Avoid unnatural repetition, keyword stuffing, excessive formatting, or sales-oriented language.
+- Make the description comprehensive, context-rich, and informative, matching the depth and scope of the original.
+- If the original includes user-facing Q&amp;A or unique benefits, incorporate these factually as dedicated sections.
+- Ensure the description is both easy to skim (with headings, concise paragraphs) and smooth to read as continuous text.
+
+Return only the improved product description based on the above instructions.
+
+Description: <span class="ph">{description}</span></pre>
+    </article>
+  </div>
+</section>
+
+<section class="style" id="format">
+  <header class="style-head">
+    <h2>format</h2>
+    <p class="meta"><span class="tnum">90</span> → <span class="tnum">286</span> words · <span class="tnum">3.2×</span> longer</p>
+  </header>
+  <div class="pair">
+    <article class="col init">
+      <div class="col-label">Initial <span class="src">all_init_prompts.py</span></div>
+      <pre>Improve the following product description by implementing best practices for content formatting that enhances readability and user engagement.
+Use clear headings and subheadings to organize content logically.
+Incorporate bullet points and numbered lists to break down complex information.
+Rewrite the description in markdown format for better presentation.
+Structure content with headings and lists: Break information into digestible chunks with clear H2s, H3s, and bullet points.
+Ensure content accuracy and freshness: Answer engines favor content that is authoritative and up-to-date.
+Return just the upgraded description without any additional text.
+
+Description: <span class="ph">{description}</span></pre>
+    </article>
+    <article class="col opt">
+      <div class="col-label">Optimized <span class="src">optimized_prompts.json</span></div>
+      <pre>Rewrite the following product description to maximize its ranking, visibility, and user engagement across ALL major search and recommendation engines—including both traditional search and modern AI-driven platforms. Use universal best practices that ensure the description performs well regardless of formatting or parsing method. Your rewritten description should:
+
+- Start with a clear, compelling summary in natural language that introduces the product, its category/class, main purpose, and unique value. Naturally incorporate relevant keywords, synonyms, and common alternative names—especially those users might search for.
+- Organize information into logically structured, readable sections (such as Overview, Key Features, Technical Specifications, Ideal Uses, FAQs, Related Products) only where it adds clarity, but ensure the content remains fully understandable if formatting is removed.
+- Present all essential details (features, specs, benefits, compatibility, and ideal use cases) once, in clear and concise language—avoid duplicating information in both prose and lists.
+- Use a diverse but natural mix of high-intent keywords, synonyms, and category terms throughout, prioritizing semantic relevance over repetition or keyword density.
+- Address a broad range of user intents and common queries by including both technical and user-focused information, ensuring the description is relevant for buyers at different stages of the decision process.
+- When mentioning related products or FAQs, keep them brief and tightly relevant, avoiding dilution of the main product’s signal.
+- Maintain strict factual accuracy and clarity—do not make unsupported claims or exaggerate features.
+- Avoid keyword stuffing, artificial phrasing, or awkward repetition; favor authentic, user-friendly language.
+- Format the output in markdown for readability if supported, but ensure the description is fully effective and understandable as plain text.
+- Return only the improved product description in markdown—do not include any commentary or instructions.
+
+Product Description: <span class="ph">{description}</span></pre>
+    </article>
+  </div>
+</section>
+
+<section class="style" id="FAQ">
+  <header class="style-head">
+    <h2>FAQ</h2>
+    <p class="meta"><span class="tnum">80</span> → <span class="tnum">280</span> words · <span class="tnum">3.5×</span> longer</p>
+  </header>
+  <div class="pair">
+    <article class="col init">
+      <div class="col-label">Initial <span class="src">all_init_prompts.py</span></div>
+      <pre>Revise the following product description by adding FAQ sections that address common questions related to the product.
+You should keep as much of the original description as you decide is necessary to accommodate the FAQ sections.
+Ensure that the FAQ sections are relevant and provide clear, concise answers to potential customer inquiries.
+Your goal is to enhance the description&#x27;s informativeness and user-friendliness making it more appealing to the user.
+Return just the upgraded description without any additional text.
+
+Description: <span class="ph">{description}</span></pre>
+    </article>
+    <article class="col opt">
+      <div class="col-label">Optimized <span class="src">optimized_prompts.json</span></div>
+      <pre>Rewrite the following product description to maximize its ranking, visibility, and genuine appeal across a broad range of search and recommendation engines, while maintaining complete factual and technical accuracy. Your rewrite must be both highly relevant to search algorithms and truly engaging for real users.
+
+Instructions:
+
+- Begin with a clear, attention-grabbing headline or product name that naturally includes the primary product type or search term.
+- Follow with a concise, benefit-focused summary (1–2 sentences) highlighting the product’s main features, advantages, and typical uses. Integrate the primary search term and at least one related keyword or synonym in a natural way.
+- Organize the main content using distinct, keyword-rich section headings relevant to the product (such as “Key Features,” “Benefits,” “Specifications,” “Applications,” etc.). Adapt the section order and content as best suits the product and user intent.
+- Present technical details or specifications as a bullet list where appropriate, explicitly listing quantifiable features.
+- Integrate additional related keywords and synonyms smoothly throughout the text, prioritizing natural language and avoiding forced repetition or keyword stuffing.
+- Include a section describing practical use cases or applications, mirroring real user search intents and phrasing.
+- Address the most common buyer questions or concerns for this product type, incorporating them naturally within the relevant sections or as a brief FAQ if most appropriate.
+- Use concise, information-dense sentences, keeping paragraphs and bullet points brief for easy scanning by both users and algorithms.
+- Ensure the entire description is easy to skim, avoids redundancy, and maintains a professional yet approachable tone.
+
+Strictly maintain factual and technical accuracy—do not introduce unverified claims or omit essential details.
+
+Rewrite the following product description according to these instructions:
+
+<span class="ph">{description}</span></pre>
+    </article>
+  </div>
+</section>
+
+<section class="style" id="advertisement">
+  <header class="style-head">
+    <h2>advertisement</h2>
+    <p class="meta"><span class="tnum">97</span> → <span class="tnum">216</span> words · <span class="tnum">2.2×</span> longer</p>
+  </header>
+  <div class="pair">
+    <article class="col init">
+      <div class="col-label">Initial <span class="src">all_init_prompts.py</span></div>
+      <pre>&quot;
+Transform the following product description into an advertisement format that is engaging and persuasive.
+Use catchy phrases, slogans, and a call-to-action to entice potential customers.
+Maintain the core information about the product, but present it in a way that highlights its benefits and unique selling points.
+Use marketing techniques to create a sense of urgency or exclusivity.
+You may also research and use popular advertisement styles and formats to guide your rewriting.
+You can find inspiration and tricks from successful ads in similar product categories.
+Return just the upgraded description without any additional text.
+
+Description: <span class="ph">{description}</span></pre>
+    </article>
+    <article class="col opt">
+      <div class="col-label">Optimized <span class="src">optimized_prompts.json</span></div>
+      <pre>Rewrite the following product description to maximize its ranking across multiple search and recommendation engines while maintaining factual accuracy and universal appeal.
+
+Instructions:
+- Begin with a concise, informative summary sentence that clearly states what the product is and its primary use or benefit, using natural language that reflects how users typically search for this type of product.
+- Clearly present all key features, specifications, and unique benefits. Expand on any important factual details from the original description—do not omit relevant information.
+- Naturally integrate a diverse set of highly relevant keywords, synonyms, and phrases that users might include in search queries for this product category. Avoid unnatural or repetitive keyword use.
+- Address common user questions or concerns for this product type to align the description with likely user intents.
+- Structure the content for both readability and machine parsing: use short, clear paragraphs and/or bullet points where appropriate, but provide narrative context as needed.
+- Maintain an informative, engaging, and fluent tone—avoid excessive marketing language, empty slogans, or forced sales pitches.
+- If appropriate, include a brief and relevant call-to-action that fits the product and its typical audience.
+- Ensure the final description is easily readable by humans and optimized for modern search and recommendation algorithms.
+
+Return only the improved product description.
+
+Description: <span class="ph">{description}</span></pre>
+    </article>
+  </div>
+</section>
+
+<section class="style" id="language">
+  <header class="style-head">
+    <h2>language</h2>
+    <p class="meta"><span class="tnum">145</span> → <span class="tnum">237</span> words · <span class="tnum">1.6×</span> longer</p>
+  </header>
+  <div class="pair">
+    <article class="col init">
+      <div class="col-label">Initial <span class="src">all_init_prompts.py</span></div>
+      <pre>Enhance the following product description by incorporating words and phrases from other languages that convey unique concepts or emotions.
+Ensure that these additions enrich the content and are relevant to the product, while preserving the original meaning.
+Your goal is to entice the user by adding exotic and intriguing linguistic elements like keywords from other languages that do not have direct English translations.
+Use these terms to elevate the tone, evoke sophistication, or create an emotional connection — while keeping the original meaning intact.
+Select expressions that naturally complement the product’s domain (e.g., French for fashion and such).
+Include select words or phrases from other languages that are commonly recognized and enrich the tone like &quot;je ne sais quoi&quot;, &quot;carpe diem&quot;, &quot;feng shui&quot;, &quot;hygge&quot;, &quot;mantra&quot;.
+Make sure the overall description remains coherent and engaging.
+Return just the upgraded description without any additional text.
+
+Description: <span class="ph">{description}</span></pre>
+    </article>
+    <article class="col opt">
+      <div class="col-label">Optimized <span class="src">optimized_prompts.json</span></div>
+      <pre>Rewrite the following product description to maximize its ranking and user relevance across diverse search and recommendation engines. Your goal is to produce a compelling, informative, and naturally readable description that appeals to a wide audience and ranks highly across all major engines. Follow these guidelines:
+
+- Begin with a clear, search-optimized headline that includes the product name and category.
+- Write a concise summary sentence highlighting the product’s primary purpose and typical use case.
+- In 3–6 bullet points, showcase the most important features and unique benefits, linking each to a user need or problem solved. Use natural, varied language and avoid formulaic phrasing.
+- Integrate primary and secondary keywords, synonyms, and related product or category terms organically throughout the description. Prioritize semantic diversity over repetition.
+- Expand on both broad and specific user intents by describing main and secondary use cases, alternative applications, and practical scenarios—ensuring these fit smoothly into the narrative.
+- Use clear, factual, and engaging language. Avoid technical jargon unless essential, and do not include unsupported claims or information not found in the original description.
+- Maintain a smooth and readable flow; the text should feel engaging and natural, not rigid or overly structured.
+- Word count should typically fall between 100 and 200 words.
+- At the end, review the description for clarity, smoothness, and natural tone, making sure it would appeal to both users and ranking engines.
+
+Product description: <span class="ph">{description}</span></pre>
+    </article>
+  </div>
+</section>
+
+<section class="style" id="minimalist">
+  <header class="style-head">
+    <h2>minimalist</h2>
+    <p class="meta"><span class="tnum">44</span> → <span class="tnum">137</span> words · <span class="tnum">3.1×</span> longer</p>
+  </header>
+  <div class="pair">
+    <article class="col init">
+      <div class="col-label">Initial <span class="src">all_init_prompts.py</span></div>
+      <pre>Reduce the following product description into a single, short sentence using plain factual language.
+Do not attempt to persuade or embellish — simply summarize the essence of the product as concisely as possible.
+Return just the upgraded description without any additional text.
+
+Description: <span class="ph">{description}</span></pre>
+    </article>
+    <article class="col opt">
+      <div class="col-label">Optimized <span class="src">optimized_prompts.json</span></div>
+      <pre>Rewrite the following product description to improve its ranking and relevance across all major search engines.
+
+- Use 2–4 clear, factual sentences in natural, readable language.
+- Begin by explicitly stating the product type and its primary purpose, naturally incorporating important keywords and phrases from the original description.
+- Clearly present all key product attributes (such as brand, model, material, size, color, compatibility, features, and intended use) in a logical, grouped manner.
+- Where appropriate, include a realistic use case or application scenario that aligns with common search queries and clarifies the product’s value.
+- Use natural language and phrasing that matches how people search, without repeating information or artificially expanding with synonyms.
+- Maintain strict factual accuracy; do not add information not found in the original description.
+- Return only the rewritten product description.
+
+Description: <span class="ph">{description}</span></pre>
+    </article>
+  </div>
+</section>
+
+<section class="style" id="storytelling">
+  <header class="style-head">
+    <h2>storytelling</h2>
+    <p class="meta"><span class="tnum">53</span> → <span class="tnum">306</span> words · <span class="tnum">5.8×</span> longer</p>
+  </header>
+  <div class="pair">
+    <article class="col init">
+      <div class="col-label">Initial <span class="src">all_init_prompts.py</span></div>
+      <pre>Rewrite the following product description as a short story, focusing on narrative elements rather than factual information.
+Use creative language and storytelling techniques to engage the reader, but do not include specific product details or features.
+Create characters and settings if needed.
+Return just the upgraded description without any additional text.
+
+Description: <span class="ph">{description}</span></pre>
+    </article>
+    <article class="col opt">
+      <div class="col-label">Optimized <span class="src">optimized_prompts.json</span></div>
+      <pre>Rewrite the following product description to maximize its ranking, visibility, and relevance across a wide range of search engines and user queries—while preserving all factual details and user value. Your goal is to create a description that appeals to both search algorithms and real users, resulting in strong performance across different ranking models.
+
+Follow these steps:
+
+1. Begin with a clear and concise summary that directly states what the product is, who it is for, and its main benefit or unique selling point—framed to match likely user intent.
+2. Identify and naturally integrate both broad (popular, high-volume) and specific (long-tail) keywords, synonyms, and common search phrases related to this product and its features. Ensure these fit smoothly into the text, avoiding keyword stuffing.
+3. Highlight key features, benefits, and what sets this product apart from alternatives, grouping related points together for easy scanning (such as in a bulleted list).
+4. Add a short “Top Questions Answered” section (2–3 items), phrased in the language of typical user search queries (e.g., “Is this compatible with...?”, “How does this work for...?”, “What are the main features?”). Provide clear, direct answers.
+5. Organize the description for quick reading: use short paragraphs, bulleted lists, and logical grouping of related information.
+6. Preserve all essential information from the original description. Expand or reorganize details as needed to improve clarity, keyword/search term coverage, and user value, but do not omit any important facts.
+7. Write in a straightforward, objective, and user-focused style. Prioritize clarity and relevance over excessive adjectives or filler.
+8. After drafting, review the description to remove any redundant or repetitive phrases, ensuring a balanced length—detailed enough to inform, concise enough for quick reading.
+9. Maintain a confident, informative, and helpful tone that aligns with how users typically search for this type of product.
+
+Use this as your source description:  
+<span class="ph">{description}</span></pre>
+    </article>
+  </div>
+</section>
+  </main>
+
+  <section class="facts" id="added-facts" aria-labelledby="facts-title">
+    <div class="facts-intro">
+      <p class="eyebrow">Side effect of optimization</p>
+      <h2 id="facts-title">When the better rewrite adds facts</h2>
+      <p>The optimized prompts ask the rewriter to answer likely buyer questions. When the original description has no answer, GPT-4.1 often supplies one. Below are products from the test set rewritten in the <em>competitive</em> style: the original, the rewrite from the initial prompt (GEO), and the rewrite from the optimized prompt (Better GEO). Highlighted text marks claims that the original description does not make. The badges show how many places each rewrite moved the product up or down in the GPT-4.1 judge's ranking. Some rewrites stop mid-sentence because the rewriter's output was capped at 500 tokens.</p>
+    </div>
+
+<article class="fact" id="fact-13653">
+  <header class="fact-head">
+    <h3>Wooden baby teether set <span class="qid">query 13653</span></h3>
+    <p>The original says untreated, unsealed wood with no glues or sealants. Better GEO adds safety claims about a baby product, including that the toys are free from small parts (a choking-hazard claim), non-toxic and chemical-free.</p>
+  </header>
+  <div class="trio">
+    <div class="col plain"><div class="col-label">Original</div><pre>Natural wooden baby teether toys 4pk forest animal set and classic baby rattles, Fine motor Development and Sensory Skills Toy, Gender Neutral Handmade Wooden Toys
+Natural Untreated Unsealed Beech Wood NATURAL WOODEN BABY TEETHING TOYS- Cut from solid Maple wood. No glues or sealants ever used. SUPPORTS BABY’S EARLY MOTER SKILL DEVELOPMENT- Baby works on Hand and Eye coordination all while enjoying relief from teething discomfort. WHY CHOOSE WOOD? Wood has Natural attributes and properties that help sustain a healthy teething surface. Unlike Silicone, wood doesn’t attract dust! No need to keep rinsing it. GREAT BABY SHOWER GIFT! Gift this teething set and it will be well appreciated by both parents and baby. Small Shop Owned Family Business in Charlotte NC</pre></div>
+    <div class="col init"><div class="col-label">GEO <span class="rank flat">0</span></div><pre>Experience superior comfort and developmental support with this Natural Wooden Baby Teether Toys 4pk Forest Animal Set and Classic Baby Rattles. Expertly handcrafted from solid, untreated, and unsealed beech and maple wood, these toys are completely free from glues and sealants, ensuring a pure and safe teething experience for your baby. The natural wood surface offers inherent hygienic benefits, as it resists dust accumulation—unlike common silicone alternatives—eliminating the need for constant rinsing and providing a consistently clean teething option.
+
+Designed to encourage early motor skill development, each piece promotes hand-eye coordination while soothing teething discomfort, making playtime both educational and comforting. The gender-neutral designs and artisanal craftsmanship make this set an ideal, thoughtful baby shower gift. Proudly made by a small, family-owned business in Charlotte, NC, these wooden toys combine safety, sensory engagement, and developmental advantages that set them apart as the best choice for conscious parents seeking quality and innovation.</pre></div>
+    <div class="col opt"><div class="col-label">Better GEO <span class="rank flat">0</span></div><pre>**Key Features**
+
+- **Natural Materials:** Made from solid, untreated, and unsealed beech and maple wood, ensuring a safe, <mark>chemical-free</mark> teething experience for babies.
+- **Handmade Quality:** Each teether and rattle is carefully handcrafted, offering unique, artisanal detail and durability.
+- **Forest Animal Set:** Includes four gender-neutral wooden teether toys shaped like classic forest animals, plus classic baby rattles for added sensory engagement.
+- **Dust-Resistant Surface:** Unlike silicone teethers, these wooden toys naturally resist dust, reducing the need for frequent cleaning.
+- **Safe for Babies:** Free from glues, sealants, and artificial finishes, making them suitable for sensitive gums and mouths.
+
+**Main Benefits**
+
+- **Supports Early Development:** Promotes fine motor skills and hand-eye coordination as babies grasp, shake, and explore each toy.
+- **Soothes Teething Discomfort:** Provides a firm, natural surface for babies to chew on, helping to relieve teething pain and irritation.
+- **Sensory Stimulation:** Engages multiple senses with natural wood texture, gentle rattling sounds, and easy-to-hold shapes, encouraging sensory exploration.
+- **Easy to Clean:** Naturally resists dust and dirt, making maintenance simple and convenient for busy parents.
+- **Safe and Sustainable:** Crafted from <mark>eco-friendly</mark> wood, supporting a healthy, <mark>non-toxic</mark> environment for your child.
+
+**Typical Use Cases and Outcomes**
+
+- **Teething Relief:** Ideal for infants experiencing teething discomfort, offering a safe and natural alternative to plastic or silicone teethers.
+- **Developmental Play:** Perfect for daily playtime, helping babies develop grip strength, coordination, and sensory awareness.
+- **Gift Giving:** A thoughtful, gender-neutral baby shower gift appreciated by parents seeking natural, handmade baby products.
+- **On-the-Go Comfort:** Compact and lightweight, these wooden teethers are easy to pack in a diaper bag for soothing relief and entertainment anywhere.
+
+**Common Questions Addressed**
+
+- **Durability:** Solid wood construction ensures long-lasting use, even with frequent chewing and handling.
+- **Ease of Use:** Designed for small hands to grasp and manipulate, encouraging independent play.
+- **Safety:** <mark>Free from small parts, toxins, and artificial coatings</mark>, making them <mark>safe for infants and toddlers</mark>.
+- **Value:** Combines teething relief, sensory stimulation, and developmental support in one versatile set.
+
+**Keywords and Search Terms:** natural wooden baby teethers, handmade baby rattles, gender</pre></div>
+  </div>
+</article>
+
+<article class="fact" id="fact-11637">
+  <header class="fact-head">
+    <h3>Wireless earbuds <span class="qid">query 11637</span></h3>
+    <p>The original is only the product name, repeated. GEO already invents vague features (touch controls, rapid charging). Better GEO goes further, with exact battery hours and an IPX5 rating.</p>
+  </header>
+  <div class="trio">
+    <div class="col plain"><div class="col-label">Original</div><pre>Wireless Earbuds
+Wireless earbuds
+Wireless earbuds</pre></div>
+    <div class="col init"><div class="col-label">GEO <span class="rank up">+1</span></div><pre>Experience next-level audio freedom with these advanced wireless earbuds, engineered for seamless connectivity and superior sound quality. Featuring cutting-edge Bluetooth technology, these earbuds deliver crystal-clear audio and deep, immersive bass, ensuring your music and calls are always vibrant and uninterrupted. The ergonomic design guarantees a comfortable, secure fit for all-day wear, while the long-lasting battery life keeps you powered through extended listening sessions. Intuitive <mark>touch controls</mark> and rapid charging capabilities provide unmatched convenience, making these wireless earbuds the optimal choice for those who demand exceptional performance, reliability, and comfort in every moment.</pre></div>
+    <div class="col opt"><div class="col-label">Better GEO <span class="rank up">+8</span></div><pre>**Wireless Earbuds**
+
+**Key Features**
+- **True Wireless Design:** Enjoy complete freedom of movement with <mark>Bluetooth-enabled</mark>, cord-free earbuds compatible with most smartphones, tablets, and laptops.
+- **Long-Lasting Battery Life:** Delivers up to <mark>6 hours</mark> of continuous playtime on a single charge, with an additional <mark>18 hours</mark> provided by the compact charging case.
+- **Crystal-Clear Sound Quality:** Advanced audio drivers offer deep bass, crisp treble, and balanced mids for immersive music, podcasts, and calls.
+- **<mark>Touch Controls</mark>:** Easily manage playback, adjust volume, and answer calls directly from the earbuds with intuitive <mark>touch-sensitive controls</mark>.
+- **Secure, Comfortable Fit:** Ergonomic design with multiple ear tip sizes ensures a snug fit for various ear shapes, ideal for workouts, commuting, and daily wear.
+- **Sweat and Water Resistance:** <mark>IPX5</mark>-rated protection guards against sweat and light rain, making these earbuds suitable for exercise and outdoor activities.
+- **Built-In Microphone:** Integrated microphone enables clear voice calls and supports voice assistant functions.
+
+**Main Benefits**
+- **Tangle-Free Listening:** No wires means hassle-free use, perfect for active lifestyles and on-the-go convenience.
+- **All-Day Power:** Extended battery life with portable charging case keeps your music and calls going throughout the day.
+- **Superior Audio Experience:** Enhanced sound quality meets the needs of music lovers, podcast listeners, and anyone seeking clear call audio.
+- **User-Friendly Controls:** Quick access to essential functions without reaching for your device.
+- **Comfort and Stability:** Designed to stay in place during exercise, travel, or daily routines, reducing discomfort and the risk of falling out.
+- **Weather-Ready:** Reliable performance even during workouts or outdoor use in light rain.
+
+**Typical Use Cases and Outcomes**
+- **Fitness and Workouts:** Secure fit and sweat resistance make these earbuds ideal for running, gym sessions, and outdoor sports.
+- **Travel and Commuting:** Compact design and noise isolation help you enjoy music or calls on buses, trains, or flights.
+- **Work and Study:** Built-in microphone and <mark>touch controls</mark> support hands-free calls and virtual meetings, improving productivity.
+- **Everyday Entertainment:** Perfect for streaming music, podcasts, or audiobooks at home or on the move.
+
+**Frequently Asked Questions**
+- **Are these earbuds compatible with my device?** Yes, they work with most <mark>Bluetooth-enabled</mark> devices, including iOS and Android smartphones, tablets, and laptops.
+-</pre></div>
+  </div>
+</article>
+
+<article class="fact" id="fact-4790">
+  <header class="fact-head">
+    <h3>Cuekondy plastic food jars <span class="qid">query 4790</span></h3>
+    <p>The original says PP, food grade and airtight. The rewrite adds BPA-free and answers its own dishwasher question with a contradictory “Yes … by hand”.</p>
+  </header>
+  <div class="trio">
+    <div class="col plain"><div class="col-label">Original</div><pre>Cuekondy Food Storage Containers Clear Empty Plastic Storage Jars with Lids Durable Kitchen Storage Box Round Sealing Food Grade Air Tight Containers (D/15x6.5cm)
+🍀 Material: PP 🍀 Keep Your Food Dry &amp; Safe:Plastic Storage Container holds kitchen staples like flour, sugar, rice, nuts, beans, snack, food, cereal, coffee, and tea,Flour, Granulated Sugar, Brown Sugar, Powdered Sugar. 🍀 Airtight Lid Seal: locking system with silicone seal. Durable construction.Convenient food-storage container, 100% Airtight and watertight. 🍀 Stylish Design &amp; Solid Functionality: Our philosophy is simple: offer stylish designs with no-nonsense functionality. We understand the kitchen is the heart of the home, where family &amp; friends connect. 🍀 See-Through Design: The containers themselves are intelligently designed to be clear ,so that you can see what the contents are without the need of tags and notes.
+Features: Package: 1 Piece Food Storage Pot  Material: PP  Capacity: A/8x6.5cm; B/10x6.5cm; C/12x6.5cm; D/15x6.5cm  Color: Clear  100% Brand New &amp; High Quality Package Content: 1X Food Storage Pot</pre></div>
+    <div class="col init"><div class="col-label">GEO <span class="rank up">+3</span></div><pre>Experience superior kitchen organization with Cuekondy Food Storage Containers, expertly crafted from high-quality, food-grade PP material to ensure both safety and durability. Unlike conventional containers, these jars feature an advanced airtight and watertight locking system with a precision silicone seal, effectively preserving the freshness and flavor of your ingredients while preventing leaks and spills. The robust construction resists everyday wear, guaranteeing long-lasting performance for all your storage needs—whether for flour, sugar, rice, nuts, snacks, coffee, or tea.
+
+Cuekondy containers are thoughtfully designed with a crystal-clear, see-through body, allowing you to instantly identify contents without the hassle of labels or notes, streamlining your kitchen experience. The sleek, modern aesthetic seamlessly blends style with practicality, making these containers an elegant addition to any kitchen. Choose Cuekondy for a storage solution that combines innovative sealing technology, exceptional clarity, and enduring quality—setting a new standard in kitchen organization.</pre></div>
+    <div class="col opt"><div class="col-label">Better GEO <span class="rank up">+7</span></div><pre>**Key Features**
+
+- **Premium Food-Grade Material:** Made from high-quality, <mark>BPA-free</mark> PP (polypropylene) plastic, ensuring safe and durable food storage for daily kitchen use.
+- **Airtight and Watertight Seal:** Features a secure locking lid with a silicone gasket, providing a 100% airtight and leak-proof seal to keep food fresh and dry.
+- **Transparent, See-Through Design:** Clear plastic construction allows you to easily identify contents at a glance without the need for labels or tags.
+- **Generous Capacity:** Size D (15x6.5cm) offers ample space for storing a wide range of pantry staples and kitchen essentials.
+- **Easy to Clean and Maintain:** Smooth surfaces and simple design make these containers easy to wash and reuse.
+
+**Main Benefits**
+
+- **Keeps Food Fresh Longer:** Airtight seal prevents moisture, air, and pests from entering, helping to extend the shelf life of dry goods such as flour, sugar, rice, coffee, tea, snacks, and cereals.
+- **Organizes Your Kitchen Efficiently:** Stackable and space-saving design helps declutter countertops and pantry shelves, making it easier to find and access ingredients.
+- **Safe and Reliable Storage:** Food-grade, <mark>non-toxic</mark> materials ensure your ingredients remain uncontaminated and safe for consumption.
+- **Convenient and Versatile:** Suitable for a variety of food items, from baking ingredients and grains to nuts, beans, and snacks.
+
+**Typical Use Cases and Outcomes**
+
+- **Pantry Organization:** Ideal for storing and organizing bulk foods, baking supplies, and daily-use ingredients in kitchen cabinets or shelves.
+- **Meal Prep and Portion Control:** Perfect for meal prepping, storing leftovers, or keeping snacks fresh for on-the-go use.
+- **Easy Content Identification:** The clear design is especially helpful for busy households, allowing quick visual checks to monitor food levels and reduce waste.
+- **Home, Office, or Travel:** Compact and durable, these containers are suitable for use at home, in the office, or for travel and picnics.
+
+**Frequently Asked Questions**
+
+- **Is this container <mark>dishwasher safe</mark>?** Yes, the smooth plastic surface is easy to clean by hand or in the dishwasher.
+- **Is it suitable for liquids?** The airtight and watertight seal makes it suitable for storing both dry foods and liquids without leaking.
+- **How durable is the material?** The PP plastic construction is designed for long-lasting use, resisting cracks and stains</pre></div>
+  </div>
+</article>
+
+<article class="fact" id="fact-5390">
+  <header class="fact-head">
+    <h3>Lock &amp; Lock glass lunch box set <span class="qid">query 5390</span></h3>
+    <p>The original covers microwave, oven and freezer use. The rewrite adds BPA-free, non-toxic and dishwasher-safe claims.</p>
+  </header>
+  <div class="trio">
+    <div class="col plain"><div class="col-label">Original</div><pre>Lock &amp; Lock Glass Euro Lunch Box Set, Green Color Dot Pattern Bag
+Green Lunch bag and two LLG414 (0.6-cup), one LLG422 (1.5-cup), a pair spoons and forks Microwave safe andcooking in oven 700-Degree F OK. Salt and oxidation resistant Freezer to microwave at once
+Most purified container we ever made. Excellent solutions for food storage. One of the world&#x27;s leading food storage container manufactures. Supplying the highest quality products &quot;Lock &amp; Lock&quot; airtight containers for food storage. The containers are scientifically designed for stacking both upward and sideways to save space on the shelf.</pre></div>
+    <div class="col init"><div class="col-label">GEO <span class="rank up">+3</span></div><pre>Experience unmatched convenience and durability with the Lock &amp; Lock Glass Euro Lunch Box Set, featuring a stylish green color dot pattern bag. This set includes two 0.6-cup and one 1.5-cup containers, along with a pair of spoons and forks, providing a complete solution for meals on the go. Engineered for versatility, each container is microwave and oven safe up to 700°F, enabling direct transfer from freezer to microwave without compromising safety or quality. Crafted from highly purified glass, these containers offer exceptional resistance to salt and oxidation, ensuring long-lasting freshness and flavor preservation. The scientifically optimized design allows for efficient stacking both vertically and horizontally, maximizing storage space and organization. As a product of one of the world’s foremost food storage manufacturers, this set exemplifies superior airtight sealing and premium quality, making it the ideal choice for those who value reliability, innovation, and smart storage solutions.</pre></div>
+    <div class="col opt"><div class="col-label">Better GEO <span class="rank up">+2</span></div><pre>**Lock &amp; Lock Glass Euro Lunch Box Set with Green Dot Pattern Bag**
+
+---
+
+**Key Features**
+- **Complete Lunch Set:** Includes a stylish green lunch bag, two 0.6-cup glass containers (LLG414), one 1.5-cup glass container (LLG422), plus a matching pair of spoon and fork.
+- **Premium Glass Containers:** Made from highly purified, durable glass that is resistant to salt and oxidation, ensuring long-lasting clarity and performance.
+- **High Temperature Resistance:** Containers are microwave safe and oven safe up to 700°F, allowing for convenient reheating and cooking.
+- **Versatile Storage:** Move food directly from freezer to microwave without worrying about cracks or damage.
+- **Airtight and Leak-Proof:** Lock &amp; Lock’s signature airtight lids keep food fresh and prevent spills, ideal for meal prep and on-the-go lunches.
+- **Space-Saving Design:** Containers are engineered for efficient stacking both vertically and horizontally, maximizing storage space in your kitchen or fridge.
+
+---
+
+**Main Benefits**
+- **Keeps Food Fresh Longer:** Airtight seal preserves flavor and prevents leaks, making it perfect for storing leftovers, salads, or snacks.
+- **Safe and Healthy:** Made from <mark>non-toxic</mark>, <mark>BPA-free</mark> materials, ensuring your food stays safe and uncontaminated.
+- **Easy to Clean:** Smooth glass surfaces resist stains and odors, and are <mark>dishwasher safe</mark> for hassle-free cleaning.
+- **Convenient Portability:** Compact, insulated lunch bag with a secure zipper keeps your meal organized and at the right temperature when you’re on the move.
+- **Multi-Functional Use:** Suitable for meal prepping, portion control, office lunches, school meals, and picnics.
+
+---
+
+**Typical Use Cases &amp; Outcomes**
+- **Ideal for Busy Professionals:** Easily pack and transport balanced lunches to work, keeping your meals fresh and ready to eat.
+- **Perfect for Students:** Durable containers and included utensils make it simple for students to bring healthy, homemade meals to school.
+- **Meal Prep &amp; Leftovers:** Store, reheat, and serve home-cooked meals directly from the same container, reducing dishes and saving time.
+- **Safe Food Storage:** Transition food from the freezer to the microwave or oven without worry, supporting a wide range of meal planning and storage needs.
+
+**Frequently Asked Questions**
+- **Is it microwave and oven safe?** Yes, the glass containers are safe for use in the microwave and oven up to 700°F.</pre></div>
+  </div>
+</article>
+
+<article class="fact" id="fact-9199">
+  <header class="fact-head">
+    <h3>hBARSCI glass bottle <span class="qid">query 9199</span></h3>
+    <p>The original says food and beverage safe. The rewrite adds a dishwasher-safe answer and a non-toxic claim.</p>
+  </header>
+  <div class="trio">
+    <div class="col plain"><div class="col-label">Original</div><pre>hBARSCI 750ml Heavy Duty Nordic Bottle with Synthetic Cork (Single Bottle) - Made in the USA - 100% Recyclable Glass - Food and Beverage Safe
+Single 750ml Nordic Bottle with Synthetic Cork. Bottle is made of 100% recyclable pure flint glass. Heavy duty, durable, and highly refractive. Food and beverage safe. Perfect for use as a water bottle. Perfect for water, sauces, salad dressing, select alcohols, food, wine, and other substances. Stands approximately 9&quot; tall when the cork in on, 8/75&quot; without the cork. Bottom diameter of 3.5&quot; and top diameter of 1.25&quot;. Top opening is 1&quot; wide.</pre></div>
+    <div class="col init"><div class="col-label">GEO <span class="rank flat">0</span></div><pre>Experience unmatched quality and versatility with the hBARSCI 750ml Heavy Duty Nordic Bottle, proudly made in the USA from 100% recyclable pure flint glass. Engineered for exceptional durability and clarity, this bottle features a heavy-duty construction that resists breakage while delivering a highly refractive, crystal-clear appearance. The included synthetic cork ensures a secure, airtight seal, preserving the freshness and flavor of your contents. Certified food and beverage safe, this bottle is ideally suited for water, sauces, salad dressings, select alcohols, wine, and more. Its thoughtfully designed dimensions—approximately 9&quot; tall with the cork, with a stable 3.5&quot; bottom diameter and a convenient 1&quot; wide top opening—make it easy to fill, pour, and store. Choose the hBARSCI Nordic Bottle for a sustainable, reliable, and visually striking solution that stands out in any setting.</pre></div>
+    <div class="col opt"><div class="col-label">Better GEO <span class="rank up">+2</span></div><pre>**hBARSCI 750ml Heavy Duty Nordic Glass Bottle with Synthetic Cork – Made in the USA**
+
+---
+
+**Key Features:**
+- **Premium 750ml Capacity:** Ample size for storing water, wine, spirits, sauces, salad dressings, or other beverages and liquids.
+- **100% Recyclable Pure Flint Glass:** Eco-friendly construction using high-clarity, recyclable glass for sustainability and purity.
+- **Heavy Duty &amp; Durable:** Thick-walled glass offers exceptional strength and resistance to breakage, ideal for repeated use.
+- **Synthetic Cork Closure:** Secure, food-safe synthetic cork preserves freshness and prevents leaks or spills.
+- **Precision Dimensions:** Stands approximately 9&quot; tall with cork (8.75&quot; without), 3.5&quot; bottom diameter, 1.25&quot; top diameter, and a 1&quot; wide opening for easy filling and pouring.
+- **Made in the USA:** Manufactured domestically for high quality and safety standards.
+
+---
+
+**Main Benefits:**
+- **Safe for Food &amp; Beverage Storage:** <mark>Non-toxic</mark>, food-grade materials ensure safe storage of drinking water, oils, vinegar, alcohol, and more.
+- **Reusable &amp; Sustainable:** 100% recyclable glass and reusable design support eco-conscious living and reduce single-use plastics.
+- **Versatile Use:** Suitable for home, bar, kitchen, restaurant, or craft applications—ideal for both everyday use and special occasions.
+- **Easy to Clean:** Smooth glass surface is simple to wash by hand or in most dishwashers, ensuring hygiene and convenience.
+- **Leak-Resistant Seal:** Synthetic cork provides a tight, reliable seal to maintain liquid freshness and prevent accidental spills during storage or transport.
+
+---
+
+**Typical Use Cases &amp; Outcomes:**
+- **Home Beverage Storage:** Store and serve water, wine, spirits, or homemade infusions with an elegant, durable bottle.
+- **Kitchen Organization:** Decant oils, vinegars, salad dressings, or sauces for easy access and attractive presentation.
+- **Crafting &amp; Gifting:** Use for DIY projects, custom bottling, or as a stylish container for gifts and party favors.
+- **Hospitality &amp; Events:** Enhance table settings or bar service with a professional-grade, visually appealing glass bottle.
+
+---
+
+**Frequently Asked Questions:**
+- **Is the bottle <mark>dishwasher safe</mark>?** Yes, the glass is durable and easy to clean.
+- **Is it suitable for carbonated beverages?** The heavy-duty glass provides strength, but</pre></div>
+  </div>
+</article>
+
+<article class="fact" id="fact-2279">
+  <header class="fact-head">
+    <h3>LIKEFAIR farmhouse canisters <span class="qid">query 2279</span></h3>
+    <p>The original says “Food Safety Material” and hand wash only, which the rewrite repeats correctly. It also adds BPA-free and no chemical leaching.</p>
+  </header>
+  <div class="trio">
+    <div class="col plain"><div class="col-label">Original</div><pre>LF LIKEFAIR Farmhouse Kitchen Canisters Set of 3,Food Storage Containers for Home Kitchen, Tea, Herbs, Sugar, Salt, Coffee, Flour, Herbs (White &amp; Black)
+Add more Farmhouse Style to your Kitchen---This vintage style canister set will evoke some rustic beauty and farm Atmosphere,It is the perfect complement to your kitchen counter, and it matches perfectly with the coffee station set in Kitchen. Food Safety Material---Our farmhouse canisters are made of sturdy high quality powder coated galvanized steel. Canister sets are food contact material, safe for storing food, do not release harmful chemicals or odors.No worry about it will be easily broken like a ceramic or glass, rot or crack like wood. Come with Convenient chalk---Except 3pcs food storage jars, you will also receive a chalk and four pieces no remark chalkboard labels. The chalkboard label is reusable, you can change remark whenever you need. Just wipe clean with a damp cloth to remove what you have written. Labels can be written repeatedly. Fashionable and Practical---These stylish kitchen containers are designed with classic black and white color. Easy to open Lid with strong metal handle, the lids fit snugly to keep out any nasties and Ant. Perfect for storing tea, coffee, sugar, vanilla, spices and other dry goods. 100% Satisfactory Customer Service---We know you will like the modern farmhouse canister set,We are so confident in our products and services,If you have any questions,Pls contact us and we will help you. We do ensure our customer satisfaction. Notice: canisters are not dishwasher friendly,hand wash only.</pre></div>
+    <div class="col init"><div class="col-label">GEO <span class="rank up">+2</span></div><pre>Experience unmatched style and durability with the LF LIKEFAIR Farmhouse Kitchen Canisters Set of 3. Designed to elevate any kitchen with authentic rustic charm, these canisters seamlessly blend vintage farmhouse aesthetics with modern practicality, making them an ideal addition to your countertop or coffee station.
+
+Crafted from premium, high-quality powder-coated galvanized steel, these canisters offer superior strength and longevity compared to more fragile ceramic or glass alternatives and will not rot or crack like wood. The food-safe materials ensure your ingredients remain fresh and uncontaminated, with no risk of harmful chemicals or odors.
+
+Unlike standard canister sets, this set includes a convenient chalk and four reusable chalkboard labels, allowing for easy customization and effortless organization. Simply wipe the labels clean to update contents as needed, ensuring your kitchen always stays organized and stylish.
+
+The classic black and white design delivers timeless elegance, while the easy-open lids with robust metal handles provide a secure, airtight seal to keep contents fresh and protected from pests. Perfectly sized for storing tea, coffee, sugar, spices, and other dry goods, these canisters combine fashion and function in one superior package.
+
+Confidently backed by dedicated customer support, the LF LIKEFAIR Farmhouse Kitchen Canisters Set guarantees satisfaction and long-lasting performance, making it the best choice for both style and reliability in kitchen storage. Please note: hand wash only for optimal care.</pre></div>
+    <div class="col opt"><div class="col-label">Better GEO <span class="rank up">+3</span></div><pre>**LF LIKEFAIR Farmhouse Kitchen Canisters Set of 3 – Food Storage Containers (White &amp; Black)**
+
+**Key Features**
+- **Set of 3 Versatile Canisters:** Includes three food storage containers ideal for organizing tea, coffee, sugar, flour, salt, spices, and herbs in your kitchen.
+- **Durable Food-Safe Materials:** Crafted from high-quality, powder-coated galvanized steel that is safe for direct food contact. These canisters will not break, crack, or absorb odors like ceramic, glass, or wood alternatives.
+- **Classic Farmhouse Design:** Features a timeless black and white color scheme and vintage-inspired style, adding rustic charm to any kitchen decor or coffee station.
+- **Secure, Easy-Open Lids:** Each canister comes with a snug-fitting metal lid and sturdy handle to keep contents fresh and protected from pests.
+- **Customizable Labels:** Includes reusable chalkboard labels and chalk, allowing you to easily identify contents and update labels as needed.
+
+**Main Benefits**
+- **Enhanced Organization:** Keeps your pantry or countertop tidy by neatly storing dry goods and ingredients in clearly labeled containers.
+- **Long-Lasting &amp; Reliable:** Made from robust, rust-resistant steel for everyday use and longevity—an ideal solution for busy kitchens.
+- **Safe Food Storage:** <mark>Non-toxic</mark>, odor-free, and <mark>does not leach chemicals</mark>, ensuring your food remains fresh and uncontaminated.
+- **Easy to Maintain:** Simple to hand wash and maintain; labels wipe clean for hassle-free relabeling.
+
+**Typical Use Cases &amp; Outcomes**
+- **Efficient Pantry Storage:** Perfect for storing and accessing commonly used ingredients like coffee, tea, sugar, flour, and spices.
+- **Stylish Kitchen Decor:** Complements farmhouse, rustic, and modern kitchen styles; ideal for display on countertops or coffee bars.
+- **Personalized Organization:** Easily update canister labels for changing pantry needs or seasonal ingredients.
+
+**Frequently Asked Questions**
+- **Are the canisters dishwasher safe?** No, these canisters are hand wash only to preserve their finish and durability.
+- **Are the materials <mark>BPA-free</mark> and safe for food?** Yes, all materials are food-grade and safe for storing edible goods.
+- **How do I change the label?** Simply wipe the chalkboard label clean with a damp cloth and rewrite as needed.
+
+**Keywords:** farmhouse kitchen canisters, food storage containers, rustic kitchen decor, airtight canisters, pantry organization, labeled canisters,</pre></div>
+  </div>
+</article>
+  </section>
+
+  <footer>Prompts are shown verbatim. The initial <em>advertisement</em> prompt opens with a stray quote character; that comes from a typo in the source file. Optimized prompts were selected on the validation split and never tuned on test data.</footer>
+</div>
+
+</html>
